@@ -11,6 +11,8 @@ tags: programming-blogs, virtualization, cybersecurity, systemprogramming
 
 在虚拟化安全的研究中，如何在尽量不修改 Guest 内核的前提下执行自定义代码，一直是一个有趣且充满挑战的话题。本文尝试分享一套基于 Hypervisor 的完整代码注入思路，涵盖了从**劫持 Guest 执行流**、**基于 EPT 的透明注入**、**双向通信协议**到**生命周期管理**的全过程。
 
+仓库位置：\[mini-int3-injector\].([https://github.com/ania0-art/mini-int3-injector](https://github.com/ania0-art/mini-int3-injector)).
+
 ---
 
 ## 1\. 引言：一点背景与思考

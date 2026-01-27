@@ -150,6 +150,27 @@ compiler_depend.ts : 443 [ERROR] IntHookPtwProcessWrite failed at 79c04000: 0xe1
 
 ---
 
+## 6\. 官方回应：揭开“僵尸页表”的真相
+
+在定位到技术细节后，我与 HVMI 项目的维护者（包括原架构师）进行了深入沟通。官方的回复虽然确认了项目已归档（不再维护），但为这一系列怪异现象提供了决定性的**架构级解释**：
+
+> *"HVMI may not see that a page-table has been freed and later on reallocated as a different kind of page (stack page, free page, etc.). HVMI will still think it's a page-table... HVMI would only see random writes using random instructions (such as PUSH or MOVDQU)..."*
+
+这段回复揭示了问题的**根本原因（Root Cause）**——**状态脱节（State Desynchronization）**。
+
+### “僵尸页表” (The Zombie Page Table) 现象
+
+1. **信号丢失**：由于 HVMI 的初始化时机（如在 Guest 运行后介入，但实际测试仍然错误）或高并发下的 EPT 事件丢失，HVMI 漏掉了操作系统“释放页表”的信号。
+    
+2. **认知偏差**：HVMI 数据库中，物理页 `0x187000` 仍被标记为**页表**，因此 EPT Hook 依然存在。
+    
+3. **地址重用**：操作系统实际上已经回收了该页，并将其重新分配给内核栈（Stack）使用。
+    
+4. **冲突爆发**：当 OS 在栈上执行正常的 `PUSH` 操作时，HVMI 拦截了写入，却用页表的逻辑去校验它。
+    
+
+**结论：** 报错 `Unsupported instruction: PUSH` 其实是**正确**的。因为在一个正常的系统中，绝对不会有人用 `PUSH` 去修改真正的页表。HVMI 崩溃是因为它发现自己陷入了“不可知状态”。
+
 ## 遗留问题
 
 在尝试放开部分监控后，虽然崩溃停止了，但使用 `sudo xl vncviewer win7` 交互时会导致主机卡死。这可能意味着：虽然引擎不再崩溃，但由于跳过了某些 PT 写入的模拟，导致 Guest OS 陷入了指令重试死循环，或者在高频的异常风暴中占满了宿主机资源。

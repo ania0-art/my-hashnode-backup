@@ -2,7 +2,7 @@
 title: "记一次基于 Linux 5.15.0-139 内核源码中ebpf辅助函数解惑学习"
 datePublished: Fri Feb 06 2026 08:30:49 GMT+0000 (Coordinated Universal Time)
 cuid: cmlamlcy7000x02k0d1ry2q0r
-slug: linux-5150-139-ebpf
+slug: linux-ebpf
 tags: cybersecurity, systems-programming, linux-kernel, ebpf, how-it-works
 
 ---
